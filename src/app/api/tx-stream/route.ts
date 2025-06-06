@@ -12,7 +12,13 @@ export async function GET(): Promise<Response> {
 
   const stream = new ReadableStream({
     start(controller) {
-      send = (msg: string) => controller.enqueue(encoder.encode(msg));
+      send = (msg: string) => {
+        try {
+          controller.enqueue(encoder.encode(msg));
+        } catch (err) {
+          console.error("Failed to enqueue message:", err);
+        }
+      };
 
       addClient(id, send);
 
@@ -25,6 +31,7 @@ export async function GET(): Promise<Response> {
     cancel() {
       clearInterval(keepAlive);
       removeClient(id);
+      console.log("Stream canceled for client:", id);
     },
   });
 
@@ -32,7 +39,7 @@ export async function GET(): Promise<Response> {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      Connection: "keep-alive",
+      "Connection": "keep-alive",
     },
   });
 }
