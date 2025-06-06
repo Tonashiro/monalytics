@@ -18,10 +18,14 @@ export async function GET(): Promise<Response> {
     write(`: keep-alive\n\n`);
   }, 15000);
 
-  stream.readable.getReader().closed.then(() => {
-    clearInterval(keepAlive);
-    removeClient(id);
-  });
+  stream.readable.getReader().closed
+    .catch((err) => {
+      console.error("Stream error:", err);
+    })
+    .finally(() => {
+      clearInterval(keepAlive);
+      removeClient(id);
+    });
 
   // Must write this immediately to initiate stream
   write(`retry: 10000\n\n`);

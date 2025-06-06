@@ -16,6 +16,8 @@ export function removeClient(id: string) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function broadcastTx(tx: any) {
+  console.log("Broadcasting transaction:", tx);
+  
   const data = `data: ${JSON.stringify(tx)}\n\n`;
   for (const client of clients) {
     try {
