@@ -2,36 +2,30 @@ import { nanoid } from "nanoid";
 import { addClient, removeClient } from "@/lib/sse";
 
 export async function GET(): Promise<Response> {
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
   const encoder = new TextEncoder();
   const id = nanoid();
 
-  const stream = new ReadableStream({
-    start(controller) {
-      const write = (msg: string) => {
-        controller.enqueue(encoder.encode(msg));
-      };
+  const write = (msg: string) => writer.write(encoder.encode(msg));
+  addClient(id, write);
 
-      addClient(id, write);
+  // Send keep-alive comment every 15s
+  const keepAlive = setInterval(() => {
+    write(`: keep-alive\n\n`);
+  }, 15000);
 
-      // Keep-alive every 15s
-      const keepAlive = setInterval(() => {
-        write(`: keep-alive\n\n`);
-      }, 15000);
-
-      controller.close = () => {
-        clearInterval(keepAlive);
-        removeClient(id);
-      };
-
-      // Must write this immediately to initiate stream
-      write(`retry: 10000\n\n`);
-    },
+  stream.readable.getReader().closed.then(() => {
+    clearInterval(keepAlive);
+    removeClient(id);
   });
 
-  return new Response(stream, {
+  write(`retry: 10000\n\n`); // initial retry value
+
+  return new Response(stream.readable, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache, no-transform",
+      "Cache-Control": "no-cache",
       Connection: "keep-alive",
     },
   });
