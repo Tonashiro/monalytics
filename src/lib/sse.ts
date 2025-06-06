@@ -19,6 +19,7 @@ export function broadcastTx(tx: any) {
   const data = `data: ${JSON.stringify(tx)}\n\n`;
   for (const client of clients) {
     try {
+      console.log(`📤 Sending tx to client ${client.id}`);
       client.write(data);
     } catch (e) {
       console.error("Failed to send to client:", e);

@@ -7,10 +7,13 @@ export async function GET(): Promise<Response> {
   const encoder = new TextEncoder();
   const id = nanoid();
 
-  const write = (msg: string) => writer.write(encoder.encode(msg));
+  const write = (msg: string) => {
+    writer.write(encoder.encode(msg));
+  };
+
   addClient(id, write);
 
-  // Send keep-alive comment every 15s
+  // Keep-alive every 15s
   const keepAlive = setInterval(() => {
     write(`: keep-alive\n\n`);
   }, 15000);
@@ -20,12 +23,13 @@ export async function GET(): Promise<Response> {
     removeClient(id);
   });
 
-  write(`retry: 10000\n\n`); // initial retry value
+  // Must write this immediately to initiate stream
+  write(`retry: 10000\n\n`);
 
   return new Response(stream.readable, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
     },
   });

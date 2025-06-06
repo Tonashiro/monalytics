@@ -23,10 +23,12 @@ export async function POST(req: NextRequest) {
   const tx = body?.event?.transaction;
 
   if (tx) {
+    console.log("📡 Broadcasting TX to SSE clients:", tx); // Add this
+
     transactions.unshift(tx);
     transactions.splice(100);
 
-    broadcastTx(tx); // 🔥 Broadcast to SSE clients
+    broadcastTx(tx);
   }
 
   return NextResponse.json({ success: true });

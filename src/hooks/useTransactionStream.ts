@@ -9,6 +9,7 @@ export const useTransactionStream = () => {
 
     source.onmessage = (e) => {
       const tx = JSON.parse(e.data);
+      console.log("🟢 Received TX via SSE:", tx);
       setTxs((prev) => [tx, ...prev]);
     };
 
