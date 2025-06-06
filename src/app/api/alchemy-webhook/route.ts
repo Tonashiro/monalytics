@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { broadcastTx } from "@/lib/sse";
 
-const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY!;
+const ALCHEMY_WEBHOOK_KEY = process.env.ALCHEMY_WEBHOOK_KEY!;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const transactions: any[] = [];
 
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const bodyText = await req.text();
 
   const calculatedSignature = crypto
-    .createHmac("sha256", ALCHEMY_API_KEY)
+    .createHmac("sha256", ALCHEMY_WEBHOOK_KEY)
     .update(bodyText, "utf8")
     .digest("hex");
 
